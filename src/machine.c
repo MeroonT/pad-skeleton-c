@@ -2,13 +2,15 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <assert.h>
+#include <stdlib.h>
+
 
 bool step() {
   return true;
 }
 
 byte_t* get_text() {
-  
+  return 0;
 }
 
 int text_size() {
@@ -38,25 +40,35 @@ int init_ijvm(char *file_path)
 {
   FILE *stream;
   int file_size = fsize(file_path);
-  assert(file_size >=0);
+  if(file_size < 0){
+    return file_size;
+  }
   
   stream = fopen(file_path, "rb");// Open read-only
-  assert(stream != NULL);
+  if(stream == NULL){
+    return -1;
+  }
   
   byte_t *buffer = malloc(file_size);
-  assert(buffer != NULL);
+  if (buffer == NULL){
+    return -1;
+  }
 
-  // Read 128 bytes into buffer
-  fread(buffer, sizeof(byte_t), file_size, stream); 
-  
+  int fread_result = fread(buffer, sizeof(byte_t), file_size, stream); 
+  if(fread_result < 0){
+    return fread_result;
+  }
+
   int result = fclose(stream);
-  assert(result >= 0);
+  if(result < 0){
+    return result;
+  }
   
   // Print buffer content
   for (int i = 0; i < file_size; i++) {
     printf("%X ", buffer[i]);
   }
-  
+
   free(buffer);
 
   return 0;
