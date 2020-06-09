@@ -1,6 +1,7 @@
 #include <ijvm.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <assert.h>
 
 bool step() {
   return true;
@@ -23,30 +24,40 @@ byte_t get_instruction(void) {
 }
 
 // Returns the size of the file
-long int fsize(const char *file) {
+long int fsize(const char *file_name) {
     struct stat st;
 
-    if (stat(file, &st) == 0)
+    if (stat(file_name, &st) == 0)
         return st.st_size;
 
     return -1;
 }
 
 // Implement loading of binary here
-int init_ijvm(char *binary_file)
+int init_ijvm(char *file_path)
 {
-  FILE *fp;
-  int file_size = fsize(binary_file);
-  byte_t *buffer;
-  fp = fopen(binary_file, "rb");// Open read-only
+  FILE *stream;
+  int file_size = fsize(file_path);
+  assert(file_size >=0);
+  
+  stream = fopen(file_path, "rb");// Open read-only
+  assert(stream != NULL);
+  
+  byte_t *buffer = malloc(file_size);
+  assert(buffer != NULL);
 
   // Read 128 bytes into buffer
-  fread(buffer, sizeof(byte_t), file_size, fp); 
-
+  fread(buffer, sizeof(byte_t), file_size, stream); 
+  
+  int result = fclose(stream);
+  assert(result >= 0);
+  
   // Print buffer content
   for (int i = 0; i < file_size; i++) {
     printf("%X ", buffer[i]);
   }
+  
+  free(buffer);
 
   return 0;
 }
